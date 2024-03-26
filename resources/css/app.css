@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+[x-cloak] {
+    display: none;
+}
+
+.option_auth
+{
+    position: relative;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: aliceblue;
+}
+
+.btn_ms
+{
+    position: relative;
+    width: 300px;
+    height: 50px;
+    background-color: rgb(61, 61, 61);
+    color: white;
+    padding: 5px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 15px;
+    transition: all ease-in 300ms;
+    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif
+}
+
+.btn_ms:hover
+{
+    background-color: rgb(99, 98, 98);
+}
+
+.btn_ms img
+{
+    position: relative;
+    left: 10px;
+}
+
+.body-login
+{
+    position: relative;
+    width: 100%;
+    height: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #9D2449;
+}
+
+.body-login img
+{
+    position: relative;
+    width: 250px;
+}
