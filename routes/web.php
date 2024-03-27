@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\MicrosoftLoginController;
+use App\Http\Controllers\ValidarMiembroController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -17,6 +18,8 @@ use App\Http\Controllers\Auth\MicrosoftLoginController;
 Route::get('/login/microsoft', [MicrosoftLoginController::class, 'redirectToMicrosoft']);
 Route::get('/login/microsoft/callback', [MicrosoftLoginController::class, 'handleMicrosoftCallback']);
 
+Route::post('/validarMiembro',[ValidarMiembroController::class,'verMiembro']);
+
 
 Route::get('/', function () {
     return view('welcome');
@@ -31,6 +34,6 @@ Route::middleware([
         return view('dashboard');
     })->name('dashboard');
     Route::get('/miembrosTest',function(){
-        return view('miembrosTest');
+        return view('miembros.index');
     })->name('miembrosTest');
 });
