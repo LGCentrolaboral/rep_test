@@ -18,7 +18,7 @@ use App\Http\Controllers\ValidarMiembroController;
 Route::get('/login/microsoft', [MicrosoftLoginController::class, 'redirectToMicrosoft']);
 Route::get('/login/microsoft/callback', [MicrosoftLoginController::class, 'handleMicrosoftCallback']);
 
-Route::post('/validarMiembro',[ValidarMiembroController::class,'verMiembro']);
+Route::post('/validarMiembro',[ValidarMiembroController::class,'validarMiembro']);
 
 
 Route::get('/', function () {

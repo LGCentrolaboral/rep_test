@@ -7,12 +7,14 @@ use Illuminate\Http\Request;
 class ValidarMiembroController extends Controller
 {
     //
-    public function verMiembro(Request $request){
+    public function validarMiembro(Request $request){
 
-        $miembro = $request->input('miembros');
+     
 
+        $miembros = $request->input('miembros');
+       
 
-        return response()->json(['message' => 'Validacion correcta', 'data' => $request]);
+        return response()->json(['message' => 'Validación correcta', 'data' => $miembros]);
 
     }
 

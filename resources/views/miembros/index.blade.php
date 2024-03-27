@@ -62,8 +62,19 @@
                 const csvList = $('#csvValues');
                 csvList.empty();
                 csvContent.forEach((row)=>{
-                    const listItem = $('<li>').text(JSON.stringify(row['curp']));
-                    csvList.append(listItem);
+                    const listItem = $('<li>');
+
+                        // Crear el div con ID 'status'
+                        const statusDiv = $('<div>').attr('id', 'status').text('Estado: Pendiente');
+
+                        // Agregar el texto del campo 'curp' al elemento <li>
+                        listItem.text('CURP: ' + JSON.stringify(row['curp']));
+
+                        // Agregar el div 'status' al elemento <li>
+                        listItem.append(statusDiv);
+
+                        // Agregar el elemento <li> a la lista
+                        csvList.append(listItem);
                 });                
 
                 console.log(JSON.stringify(csvContent));
@@ -78,14 +89,23 @@
         $('#loadMiembros').click((e)=>{
             e.preventDefault();
 
+            // let form_data = new FormData();
+
+            // form_data.append('miembros', miembros);
+
+            const dataToSend = {
+            miembros: miembros
+            };
+
+            // Hacer un recorrido con una promesa por cada registro para esperar un valor y actualizar el estado, marcando un error donde lo haya, con la opcion de botones para editar y volver a validar una curp 
+
             fetch('/validarMiembro', {
                 method: "POST",
-                body: JSON.stringify(miembros),
+                body: JSON.stringify(dataToSend),
                 headers: {
                     "Content-type": "application/json; charset=UTF-8",
                     'X-CSRF-TOKEN': csrfToken
-                },
-                body: { 'miembros' : miembros }
+                }
             }).then((response)=>{
                 response.json().then((object)=>{
                     console.log("Correct!", object);
