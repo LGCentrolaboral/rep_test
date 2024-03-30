@@ -17,23 +17,24 @@
                 <hr>
                 <br>
                 <form action="#">
-                    <input type="file" id="list_miembros">
-                    input
-                    <button class="" id="loadMiembros">Validar miembros</button>
+                    <input class="form-control" type="file" id="list_miembros">
+                    <button class="btn " id="loadMiembros">Validar miembros</button>
                 </form>
             </div>
             <div class="vista-data-cargada">
                 <ul id="csvValues"></ul>
             </div>
-        </div>  
+        </div>
     </div>
 
-    
+
 </x-app-layout>
 
 <script>
     $(document).ready(()=>{
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+
 
         var miembros = [];
         var csvContent = [];
@@ -43,9 +44,9 @@
             const reader = new FileReader();
 
             reader.onload = function(e) {
-                
+
                 const lines = e.target.result.split('\n');
-            
+
                 lines.forEach(function(line){
                     const values = line.split(',');
                     const csvObject = {
@@ -75,44 +76,73 @@
 
                         // Agregar el elemento <li> a la lista
                         csvList.append(listItem);
-                });                
+                });
 
-                console.log(JSON.stringify(csvContent));
+                // console.log(JSON.stringify(csvContent));
             };
-            
+
             miembros = csvContent;
 
             reader.readAsText(file);
         });
 
-        
+
         $('#loadMiembros').click((e)=>{
-            e.preventDefault();
+                e.preventDefault();
 
-            // let form_data = new FormData();
+                var promises = [];
+                var promise;
 
-            // form_data.append('miembros', miembros);
+                console.log(miembros[0]);
 
-            const dataToSend = {
-            miembros: miembros
-            };
 
-            // Hacer un recorrido con una promesa por cada registro para esperar un valor y actualizar el estado, marcando un error donde lo haya, con la opcion de botones para editar y volver a validar una curp 
+                miembros.forEach((row)=>{
 
-            fetch('/validarMiembro', {
-                method: "POST",
-                body: JSON.stringify(dataToSend),
-                headers: {
-                    "Content-type": "application/json; charset=UTF-8",
-                    'X-CSRF-TOKEN': csrfToken
-                }
-            }).then((response)=>{
-                response.json().then((object)=>{
-                    console.log("Correct!", object);
-                }); 
-            }).catch((error)=>{
-                alert("Hubo un error! " + error );
-            });
+                    if(row.curp === undefined ){
+                        return;
+                    }
+
+                    const dataToSend = {
+                    miembros: row
+                    };
+
+                    promise = fetch('/validarMiembro', {
+                    method: "POST",
+                    body: JSON.stringify(dataToSend),
+                    headers: {
+                        "Content-type": "application/json; charset=UTF-8",
+                        'X-CSRF-TOKEN': csrfToken
+                        }
+                    }).then((response)=>{
+                        if(!response.ok){
+                            throw new Error('Error en la solicitud.');
+                        }
+                        return response.json();
+                        // response.json().then((object)=>{
+                        //     console.log("Correct!", object);
+                    }).then((data)=>{
+                        console.log("Correcto", data);
+                        return data;
+                    }).catch((error)=>{
+                        console.log("Hubo un error! " + error +  ' CURP: ' + JSON.stringify(row)  );
+                        throw error;
+                    });
+
+                    console.log(promise);
+
+                    promises.push(promise);
+
+
+
+                }); // END foreach
+
+                Promise.all(promise)
+                    .then((result)=>{
+                        console.log("Todas las promesas recibidas" , result);
+                    })
+                    .catch((error)=>{
+                        console.error("Error en la solicitud", error);
+                    });
         });
 
     });
