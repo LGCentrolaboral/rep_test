@@ -12,7 +12,23 @@
 
     <div class="contenedor">
         <div class="data_contenedor">
+            <div class="top-bar">
+                <h2>Simular tramite</h2>
+                <label for="tipoTramite">Selecciona el tipo de tramite:</label>
+                <select class="" name="tipoTramite" id="tipo_tramite">
+                    <option value="0">Selecciona un tramite</option>
+                </select>
+                <br>
+                <br>
+                <button id="simularTramite" class="block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" type="button">
+                    Crear tramite
+                </button>
+                <hr>
+                <div id="datos_tramite"></div>
+            </div>
+            <hr>
             <div>
+                <br>
                 <h2>Adjuntar archivo</h2>
                 <hr>
                 <br>
@@ -61,7 +77,102 @@
 </x-app-layout>
 
 <script>
+    /////Validar campos vacios al cargar el documento
+        //// Validar respuesta de las curps
+            //// Validar curps con renapo para la obtencion del estado de la curp segun la documentación
+                /// Reflejar estado en la vista del tramite
+                    /// Realizar acciones desde el panel para la curp
+                        /// Almacenar el estado de las curps si se interrumpe la operacion ( Base de datos [ json o registro por registro ] o localstorage arreglo de operaciones)
+
+    function iniciarTramite(token, tipo_tramite){
+        
+        csrfToken = token;
+        $nombre_tramite = 
+        $.ajax({
+                url:    '/tramites',
+                method: 'POST',
+                headers:{
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                data:  { 'id_tipo_tramite': tipo_tramite },
+                success: function(response){
+                    console.log(response);
+                    $('#datos_tramite').empty();
+                    $('#datos_tramite').html(
+                        '<h1> Tramite Seleccionado: ' + $('#tipo_tramite option:selected').text() + '</h1><br><h1>ID del tramite: ' + response.id + '</h1>'
+                    );
+
+                    return response;
+                },
+                statusCode: {
+                    404:(response)=>{
+                        console.error('No se encontro la ruta', response);
+                        return response;
+                    },
+                    500:(response)=>{
+                        console.error('Error en el servidor', response);
+                        return response;
+                    }
+                }
+            });
+
+        
+
+    }
+
+
+    function getData(token){
+
+        csrfToken = token; 
+        
+     
+
+        $.ajax({
+            url:    '/datosTramites',
+            method: 'POST',
+            headers:{
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+            data:   {  },
+            success: function(response){
+                response.forEach((row)=>{
+                    $('#tipo_tramite').append('<option value=' + row.id + '>' + row.descripcion + '</option>');
+                });   
+            },
+            statusCode: {
+              404: (response)=>{
+                console.error('No se encontro la ruta', response);
+              },
+              500: (response)=>{
+                console.error('Error en el servidor', response);
+              }  
+            }
+        });
+    }
+
     $(document).ready(()=>{
+
+        
+        var tramite;
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        $('#simularTramite').click(()=>{
+            tipo_tramite = $('#tipo_tramite').val();
+            console.log(csrfToken);
+           tramite =  iniciarTramite(csrfToken,tipo_tramite);
+           
+
+        });
+
+        getData(csrfToken);
+
+
+        $('#tipo_tramite').change(()=>{
+            console.log($('#tipo_tramite').val());
+        });
+
+        // Traer datos de la bd de registro
+      
 
         $("#csvValues li").click(function (event) {
             console.log($(this).text());
@@ -85,7 +196,7 @@
         });
 
 
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        
 
         $('#showPromises').click(()=>{
             $('.log-api').empty();
@@ -181,7 +292,8 @@
                     }
 
                     const dataToSend = {
-                    miembros: row
+                    miembros:       row,
+                    tipo_tramite:   tramite
                     };
 
                     promise = fetch('/validarMiembro', {

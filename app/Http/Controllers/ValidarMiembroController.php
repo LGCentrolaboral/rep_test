@@ -6,6 +6,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Http\Request;
 
+
 class ValidarMiembroController extends Controller
 {
     //
@@ -27,10 +28,16 @@ class ValidarMiembroController extends Controller
             //code...
             $response_imss = $http->request('POST',$url,['form_params'=>$data_2]);
             $response = $response_imss->getBody()->getContents();
+
+          
+
+
          } catch (GuzzleException $e) {
             //throw $th;
             $response = 'Error al realizar la solicitud con Guzzle: ' . $e->getMessage();
          }
+
+         //////////validaciones
 
 
 

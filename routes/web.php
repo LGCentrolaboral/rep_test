@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\MicrosoftLoginController;
 use App\Http\Controllers\ValidarMiembroController;
+use App\Http\Controllers\DatosTramitesController;
+use App\Http\Controllers\TramiteController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -15,11 +17,15 @@ use App\Http\Controllers\ValidarMiembroController;
 */
 
 
+Route::post('/tramites',[TramiteController::class, 'simularTramite']);
+
 Route::get('/login/microsoft', [MicrosoftLoginController::class, 'redirectToMicrosoft']);
+
 Route::get('/login/microsoft/callback', [MicrosoftLoginController::class, 'handleMicrosoftCallback']);
 
 Route::post('/validarMiembro',[ValidarMiembroController::class,'validarMiembro']);
 
+Route::post('/datosTramites',[DatosTramitesController::class,'getDataTramites']);
 
 Route::get('/', function () {
     return view('welcome');
