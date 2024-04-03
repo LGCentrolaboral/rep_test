@@ -67,6 +67,12 @@
                     </div>
                     <div id="porcent"></div>
                 </div>
+                <br>
+                <div id="footer_status">
+                    <button id="close_btn" class="block text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800" type="button">
+                        Cerrar
+                    </button>
+                </div>
                 
             </div>
         </div>
@@ -77,8 +83,7 @@
 </x-app-layout>
 
 <script>
-    /////Validar campos vacios al cargar el documento
-        //// Validar respuesta de las curps
+   
             //// Validar curps con renapo para la obtencion del estado de la curp segun la documentación
                 /// Reflejar estado en la vista del tramite
                     /// Realizar acciones desde el panel para la curp
@@ -115,9 +120,6 @@
                     }
                 }
             });
-
-        
-
     }
 
 
@@ -125,8 +127,6 @@
 
         csrfToken = token; 
         
-     
-
         $.ajax({
             url:    '/datosTramites',
             method: 'POST',
@@ -152,9 +152,15 @@
 
     $(document).ready(()=>{
 
-        
+       
+       
         var tramite;
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        $('#close_btn').click(()=>{
+            $('#modal-load').hide();
+        });
+
 
         $('#simularTramite').click(()=>{
             tipo_tramite = $('#tipo_tramite').val();
@@ -211,26 +217,30 @@
         $('#list_miembros').on('change',(event)=>{
             const file = event.target.files[0];
             const reader = new FileReader();
-
+            
             reader.onload = function(e) {
 
                 const lines = e.target.result.split('\n');
-
+                
                 lines.forEach(function(line){
+                   
                     const values = line.split(',');
-                    const csvObject = {
+                    if(values[0] !== '' || values[1] !== '' || values[2] !== '' || values[3] !== '' || values[4] !== '' ){
+                        const csvObject = 
+                        {
                         'nombre' : values[0],
                         'primerApellido' : values[1],
                         'segundoApellido' : values[2],
                         'curp' : values[3],
-                        'empresa' : values[4],
-
+                        'empresa' : values[4]
+                        }
+                        sizeCsvContent = sizeCsvContent + 1;
+                        console.log(sizeCsvContent);
+                        csvContent.push(csvObject);
                     }
-                    sizeCsvContent = sizeCsvContent + 1;
-
-                    console.log(sizeCsvContent);
-                    
-                    csvContent.push(csvObject);
+                    else{
+                        console.error('Registro vacio');
+                    }                         
                 });
 
                 const csvList = $('#csvValues');
@@ -261,23 +271,22 @@
 
                 // console.log(JSON.stringify(csvContent));
             };
-
             miembros = csvContent;
-
             //console.log(sizeCsvContent);
-
             reader.readAsText(file);
         });
 
 
         $('#loadMiembros').click((e)=>{
                 e.preventDefault();
+                let stopExecution = false;
                 var pointer = 0;
                 var promises = [];
                 var promise;
                 var actual_progress = 0;
+                var curpsValidadas = []
 
-                sizeCsvContent = sizeCsvContent - 1;
+                //sizeCsvContent = sizeCsvContent - 1;
 
                 var next_progress = 100/sizeCsvContent;
 
@@ -286,6 +295,11 @@
                 $('#notification').html('Validando miembro: ' + pointer + ' de ' + sizeCsvContent );
                 //console.log(miembros[0]);
                 miembros.forEach((row)=>{
+                    console.log(stopExecution);
+                    if(stopExecution){
+                        console.log('***************************************');
+                        return Promise.reject(new Error('Detencion de la ejecución solicitada.')); 
+                    }
 
                     if(row.curp === undefined ){
                         return;
@@ -318,6 +332,9 @@
                         $('#progress-bar').width(actual_progress + '%');
                         $('#porcent').empty();
                         $('#porcent').html(Math.round(actual_progress) + '%');
+                        if(actual_progress){
+
+                        }
                         return data;
                     }).catch((error)=>{
                         console.log("Hubo un error! " + error +  ' CURP: ' + JSON.stringify(row)  );
@@ -330,24 +347,55 @@
                         resultPromises.push(data);
                         throw error;
                     });
-
                     console.log(promise);
-
                     promises.push(promise);
-
-
-
                 }); // END foreach
 
-                Promise.all(promise)
+                Promise.all(promises)
                     .then((result)=>{
-                        console.log("Todas las promesas recibidas" , result);
-                       
+                        $('#footer_status').show();
+                        $('.log-api').html(JSON.stringify(result['response']));
+                       result.forEach(objeto => {
+                        const response_api = JSON.parse(objeto.response);
+                        console.log(response_api);
+                        curpsValidadas.push(response_api);
+                        const csvList = $('#csvValues');
+                        csvList.empty();
+                        curpsValidadas.forEach((row)=>{
+                            const listItem = $('<li>');
+                            row.forEach((line)=>{
+                                 var statusDiv='';
+                                // Crear el div con ID 'status'
+                                if(JSON.stringify(line.existe) === 'false'){
+                                    console.log('**********************');
+                                    status = 'No encontrada'; 
+                                    statusDiv = $('<div style="color:red;">').attr('id', 'status').text( status); 
+                                   
+                                    console.log(statusDiv);
+                                }else{
+                                    console.log('**********************');
+                                    status = 'Curp localizada'; 
+                                    statusDiv = $('<div style="color:green;">').attr('id', 'status').text( status);
+                                    console.log(statusDiv);
+                                }
 
+                                 // Agregar el texto del campo 'curp' al elemento <li>                                
+                                listItem.text('CURP: ' + JSON.stringify(line.curp));
+
+                                 // Agregar el div 'status' al elemento <li>
+                                    listItem.append(statusDiv);
+
+                                 // Agregar el elemento <li> a la lista
+                                csvList.append(listItem);
+
+                            });
+                });
+                       });
+                        console.log("Todas las promesas recibidas" , result);
+                        console.info(curpsValidadas);
                     })
                     .catch((error)=>{
-                        console.error("Error en la solicitud", error);
-                        
+                        console.error("Error en la solicitud", error);    
                     });
         });
 

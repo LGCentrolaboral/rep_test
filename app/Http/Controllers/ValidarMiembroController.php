@@ -29,7 +29,7 @@ class ValidarMiembroController extends Controller
             $response_imss = $http->request('POST',$url,['form_params'=>$data_2]);
             $response = $response_imss->getBody()->getContents();
 
-          
+            $response = json_decode(stripcslashes($response));
 
 
          } catch (GuzzleException $e) {
@@ -38,7 +38,7 @@ class ValidarMiembroController extends Controller
          }
 
          //////////validaciones
-
+    
 
 
         //    // Devolver el cuerpo de la respuesta como JSON
